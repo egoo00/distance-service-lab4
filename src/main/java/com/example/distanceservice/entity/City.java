@@ -15,6 +15,8 @@ import java.util.List;
 @AllArgsConstructor
 public class City {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     private String name;
     private double latitude;
     private double longitude;
