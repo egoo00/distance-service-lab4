@@ -3,21 +3,17 @@ package com.example.distanceservice.cache;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Component
 public class SimpleCache {
+    private final Map<String, Object> cache = new HashMap<>();
 
-    // Ключи в формате "cities_<countryName>" уникальны, что минимизирует коллизии.
-    // String использует свои реализации equals() и hashCode(), обеспечивая корректное сравнение.
-    private final Map<String, List<?>> cache = new HashMap<>();
-
-    public void put(String key, List<?> value) {
+    public void put(String key, Object value) {
         cache.put(key, value);
     }
 
-    public List<?> get(String key) {
+    public Object get(String key) {
         return cache.get(key);
     }
 
