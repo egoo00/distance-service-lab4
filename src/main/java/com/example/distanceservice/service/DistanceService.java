@@ -5,7 +5,8 @@ import com.example.distanceservice.entity.City;
 import com.example.distanceservice.entity.CityPair;
 import com.example.distanceservice.exception.CityNotFoundException;
 import com.example.distanceservice.repository.CityRepository;
-import com.example.distanceservice.service.RequestCounter; 
+import com.example.distanceservice.service.RequestCounter;
+import com.example.distanceservice.cache.SimpleCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,18 +18,29 @@ public class DistanceService {
     private final CityRepository cityRepository;
     private final GeocodingService geocodingService;
     private final RequestCounter requestCounter;
+    private final SimpleCache simpleCache;
 
     @Autowired
-    public DistanceService(CityRepository cityRepository, GeocodingService geocodingService, RequestCounter requestCounter) {
+    public DistanceService(CityRepository cityRepository, GeocodingService geocodingService, RequestCounter requestCounter, SimpleCache simpleCache) {
         this.cityRepository = cityRepository;
         this.geocodingService = geocodingService;
         this.requestCounter = requestCounter;
+        this.simpleCache = simpleCache;
     }
 
     public DistanceResponse calculateDistance(String city1Name, String city2Name) {
         requestCounter.increment();
-        City city1 = cityRepository.findByName(city1Name).orElseGet(() -> geocodingService.getCity(city1Name));
-        City city2 = cityRepository.findByName(city2Name).orElseGet(() -> geocodingService.getCity(city2Name));
+        String cacheKey = "distance_" + city1Name.toLowerCase() + "_" + city2Name.toLowerCase();
+        @SuppressWarnings("unchecked")
+        DistanceResponse cachedResponse = (DistanceResponse) simpleCache.get(cacheKey);
+        if (cachedResponse != null) {
+            return cachedResponse;
+        }
+
+        City city1 = cityRepository.findByName(city1Name.toLowerCase())
+                .orElseGet(() -> geocodingService.getCity(city1Name));
+        City city2 = cityRepository.findByName(city2Name.toLowerCase())
+                .orElseGet(() -> geocodingService.getCity(city2Name));
         if (city1 == null || city2 == null) {
             throw new CityNotFoundException("One or both cities not found");
         }
@@ -40,7 +52,9 @@ public class DistanceService {
         cityPair.setUnit("km");
         city1.getCityPairs().add(cityPair);
         cityRepository.save(city1);
-        return new DistanceResponse(city1Name, city2Name, distance, "km");
+        DistanceResponse response = new DistanceResponse(city1Name, city2Name, distance, "km");
+        simpleCache.put(cacheKey, response);
+        return response;
     }
 
     public List<DistanceResponse> calculateBulkDistances(List<String[]> cityPairs) {
