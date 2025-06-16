@@ -46,15 +46,15 @@ public class CityService {
 
     public City saveCity(City city) {
         City savedCity = cityRepository.save(city);
-        // Очистка кэша, если город обновляется
-        simpleCache.put("all_cities", null); // Сбрасываем кэш всех городов
-        simpleCache.put("city_" + savedCity.getId(), savedCity); // Обновляем кэш конкретного города
+      
+        simpleCache.put("all_cities", null); 
+        simpleCache.put("city_" + savedCity.getId(), savedCity); 
         return savedCity;
     }
 
     public void deleteCity(Long id) {
         cityRepository.deleteById(id);
-        simpleCache.put("all_cities", null); // Сбрасываем кэш всех городов
-        simpleCache.put("city_" + id, null); // Удаляем кэш удаленного города
+        simpleCache.put("all_cities", null); 
+        simpleCache.put("city_" + id, null);
     }
 }
