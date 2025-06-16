@@ -46,14 +46,14 @@ public class TouristService {
 
     public Tourist saveTourist(Tourist tourist) {
         Tourist savedTourist = touristRepository.save(tourist);
-        simpleCache.put("all_tourists", null); // Сбрасываем кэш всех туристов
-        simpleCache.put("tourist_" + savedTourist.getId(), savedTourist); // Обновляем кэш конкретного туриста
+        simpleCache.put("all_tourists", null); 
+        simpleCache.put("tourist_" + savedTourist.getId(), savedTourist); 
         return savedTourist;
     }
 
     public void deleteTourist(Long id) {
         touristRepository.deleteById(id);
-        simpleCache.put("all_tourists", null); // Сбрасываем кэш всех туристов
-        simpleCache.put("tourist_" + id, null); // Удаляем кэш удаленного туриста
+        simpleCache.put("all_tourists", null); 
+        simpleCache.put("tourist_" + id, null); 
     }
 }
